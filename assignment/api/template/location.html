@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Map Search</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAjp6UC2Y57RPRMmAK0jE9LqhOrbegRJxk"></script>
+    <script>
+        function initMap(latitude, longitude) {
+            var mapOptions = {
+                zoom: 13,
+                center: {lat: latitude, lng: longitude}
+            };
+            var map = new google.maps.Map(document.getElementById('map'), mapOptions);
+            var marker = new google.maps.Marker({
+                position: {lat: latitude, lng: longitude},
+                map: map
+            });
+        }
+
+        function searchLocation() {
+            var query = document.getElementById('location-query').value;
+            console.log("Searching for location:", query);
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/searchlocationandsave/?query=' + query, true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        console.log("API response:", xhr.responseText);
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.latitude && response.longitude) {
+                            var latitude = response.latitude;
+                            var longitude = response.longitude;
+                            console.log("Location found:", latitude, longitude);
+                            initMap(latitude, longitude);
+                        } else {
+                            alert(response.error || 'Location not found');
+                        }
+                    } else {
+                        console.error("API request failed with status:", xhr.status);
+                    }
+                }
+            };
+            xhr.send();
+        }
+    </script>
+</head>
+<body onload="initMap(0, 0)">
+    <h1 style="text-align: center;">Map Search</h1>
+    <div style="text-align: center;">
+        <input type="text" id="location-query" placeholder="Enter location">
+        <button onclick="searchLocation()">Search</button>
+    </div>
+    <div id="map" style="height: 500px; width: 100%;"></div>
+</body>
+</html>
